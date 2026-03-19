@@ -1,0 +1,16 @@
+export type Customers = {
+    id?: number,
+    entity_id?: number,
+    user_id?: number,
+    customer_category_id?: number,
+    location_id?: number,
+    first_name?: string,
+    last_name?: string,
+    phone_number?: string,
+    country_code_phone_number?: string,
+    email?: string,
+    last_visit?: string,
+    last_spend_daily?: number,
+    last_spend_weekly?: number,
+    last_spend_monthly?: number,
+}
