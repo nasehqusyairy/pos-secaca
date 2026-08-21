@@ -72,55 +72,79 @@ const SignInPage: FC<SignInPageProps> = () => {
 					<Image src="/images/login.svg" width={400} height={500} alt="Login picture" className="max-w-full h-auto"/>
 				</div>
 				<div className="w-full md:w-[50%] flex items-center justify-center p-4">
-					<div className="border border-border rounded-md p-5 w-full max-w-[400px] bg-white">
-						<div className="font-semibold text-center text-lg md:text-2xl mb-2">
-							Selamat datang di Zakiah 
-						</div>
-						<div className="text-xs md:text-base text-gray-500 text-center">
-							Masukan email untuk mendapatkan <br />
-							akses dashboard dan POS
-						</div>
-						<Form {...form}>
-							<form
-								onSubmit={form.handleSubmit(onSubmit)}
-								className="mt-5 space-y-5"
-							>
-								<FormField
-									control={form.control}
-									name="email"
-									render={({ field }) => (
-										<FormItem>
-											<FormControl>
-												<Input
-													placeholder="Masukkan email..."
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="password"
-									render={({ field }) => (
-										<FormItem>
-											<FormControl>
-												<Input
-													type="password"
-													placeholder="Masukkan password..."
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<Button className="w-full text-xs md:text-base" disabled={isLoading ? true : false}>{isLoading ? 'Loading...' : 'Sign in'}</Button>
-							</form>
-						</Form>
+				<div className="border border-border rounded-md p-5 w-full max-w-[400px] bg-white">
+					<div className="flex items-center justify-center gap-3 mb-3">
+					<Image
+						src="/images/zakiah.png"
+						alt="Logo Zakiah"
+						width={40}
+						height={40}
+						className="object-contain"
+						priority
+					/>
+					<div className="h-6 w-[1px] bg-gray-200" />
+					<Image
+						src="/images/secaca.png"
+						alt="Logo Secaca"
+						width={45}
+						height={45}
+						className="object-contain"
+						priority
+					/>
 					</div>
+
+					<div className="font-semibold text-center text-base md:text-xl mb-2">
+					Selamat datang di Zakiah & Secaca
+					</div>
+					
+					<div className="text-xs md:text-base text-gray-500 text-center">
+					Masukan email untuk mendapatkan <br />
+					akses dashboard dan POS
+					</div>
+
+					<Form {...form}>
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="mt-5 space-y-5"
+					>
+						<FormField
+						control={form.control}
+						name="email"
+						render={({ field }) => (
+							<FormItem>
+							<FormControl>
+								<Input
+								placeholder="Masukkan email..."
+								{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+							</FormItem>
+						)}
+						/>
+						<FormField
+						control={form.control}
+						name="password"
+						render={({ field }) => (
+							<FormItem>
+							<FormControl>
+								<Input
+								type="password"
+								placeholder="Masukkan password..."
+								{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+							</FormItem>
+						)}
+						/>
+
+						<Button className="w-full text-xs md:text-base" disabled={isLoading ? true : false}>
+						{isLoading ? 'Loading...' : 'Sign in'}
+						</Button>
+					</form>
+					</Form>
+				</div>
 				</div>
 			</div>
 		</div>

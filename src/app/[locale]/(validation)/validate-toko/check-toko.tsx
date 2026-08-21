@@ -2,7 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { FC, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,14 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
 
   const locale = useLocale();
   const router = useRouter();
+
+  const { data: session } = useSession();
+
+  // Ambil entity ID atau nama langsung dari selected_entity
+  const selectedEntity = (session?.user as any)?.selected_entity;
+  const entityId = selectedEntity?.id ?? 3;
+  const rawName = selectedEntity?.name ?? (entityId === 1 ? "Secaca" : "Zakiah");
+  const brandName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
 
   const { data, isPending } = useGetEmpLocationsQuery(100);
   const authStore = useAuthStoreMutation();
@@ -103,9 +111,8 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
     <div className="relative w-full h-screen p-4">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-primary rounded-lg p-10">
         <div className="font-semibold text-center text-lg md:text-2xl mb-2">
-          Selamat datang di Zakiah
+          Selamat datang di {brandName}
         </div>
-        {/* Content for choose akses cashier or admin */}
         <div className="text-xs md:text-base text-gray-500 text-center mb-10">
           Silakan pilih akses lokasi toko dibawah ini
         </div>

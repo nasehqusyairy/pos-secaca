@@ -209,16 +209,16 @@ const KeranjangPage: FC<KeranjangPageProps> = () => {
 
   const handleToggleProduct = (product: Catalogues) => {
     const existingProduct = selected.find((item) => item.id === product.id);
-
+  
     if (existingProduct) {
-      const stock = getProductStock(existingProduct) as number
-      if(existingProduct.quantity >= stock) {
-        return
+      const stock = getProductStock(existingProduct) as number;
+      if (existingProduct.quantity >= stock) {
+        return;
       }
-
+  
       handleQuantityUpdate(existingProduct.id, existingProduct.quantity + 1);
     } else {
-      setSelected((prevSelected) => [...prevSelected, { ...product, quantity: 1 }])
+      setSelected((prevSelected) => [{ ...product, quantity: 1 }, ...prevSelected]);
     }
   };
 
