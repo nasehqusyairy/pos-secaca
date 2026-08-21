@@ -4,32 +4,16 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import NextAuthProvider from "@/context/NextAuthProvider";
 import QueryClientProviderPage from "@/components/templates/QueryClientPage";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import type { Metadata } from "next";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const session = await getServerSession(authOptions);
-
-  const selectedEntity = (session?.user as any)?.selected_entity;
-  const entityId = selectedEntity?.id ?? 3;
-  const isSecaca = entityId === 1 || selectedEntity?.code === "secaca";
-
-  const rawName = selectedEntity?.name ?? (isSecaca ? "Secaca" : "Zakiah");
-  const brandName = session
-    ? rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase()
-    : "Zakiah & Secaca";
-  const logoName = isSecaca ? "secaca.png" : "zakiah.png";
-
-  return {
-    title: `${brandName} POS`,
-    icons: {
-      icon: `/images/${logoName}`,
-      shortcut: `/images/${logoName}`,
-      apple: `/images/${logoName}`,
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: "Zakiah & Secaca POS",
+  icons: {
+    icon: "/images/zakiah.png",
+    shortcut: "/images/zakiah.png",
+    apple: "/images/zakiah.png",
+  },
+};
 
 const inter = Inter({ subsets: ['latin'] });
 

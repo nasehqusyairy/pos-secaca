@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -24,7 +24,7 @@ import { useAuthStoreMutation } from "@/app/api/store/mutation";
 import { useLogoutMutation } from "@/app/api/authentication/mutation";
 import { AuthStore } from "@/app/api/store/type";
 
-interface ValidationsStorePageProps { }
+interface ValidationsStorePageProps {}
 
 const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
   const [open, setOpen] = useState(false);
@@ -35,37 +35,15 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
 
   const { data: session } = useSession();
 
-  // Ambil entity ID atau nama langsung dari selected_entity
   const selectedEntity = (session?.user as any)?.selected_entity;
   const entityId = selectedEntity?.id ?? 3;
   const rawName = selectedEntity?.name ?? (entityId === 1 ? "Secaca" : "Zakiah");
-  const brandName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+  const brandName = useMemo(() => {
+    return rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+  }, [rawName]);
 
   const { data, isPending } = useGetEmpLocationsQuery(100);
   const authStore = useAuthStoreMutation();
-
-  useEffect(() => {
-    if (!data) return;
-
-    const locations = data.data ?? []
-
-    if (!locations) return;
-    if (locations.length == 1) {
-      createAuth(locations[0].location_id)
-    }
-  }, [isPending])
-
-  const onClickKasir = () => {
-    const location_id = data?.data.find(
-      (data: any) => data.location.name === value
-    )?.location_id;
-
-    if (!location_id) {
-      return;
-    }
-
-    createAuth(location_id)
-  };
 
   const createAuth = (location_id: number) => {
     const body = {
@@ -76,36 +54,54 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
     } as AuthStore;
 
     authStore.mutate(body, {
-      onSuccess: (data) => {
-        const dataLocation = data?.data.device.location;
-        const deviceCode = data?.data.device.code;
+      onSuccess: (resData) => {
+        const dataLocation = resData?.data?.device?.location;
+        const deviceCode = resData?.data?.device?.code;
         localStorage.setItem("location", JSON.stringify(dataLocation));
         localStorage.setItem("deviceCode", deviceCode);
 
-        return router.push(`/${locale}/kasir/katalog`);
+        router.push(`/${locale}/kasir/katalog`);
       },
       onError: () => {
-        console.log("Error Auth Store");
+        console.error("Error Auth Store");
       },
     });
-  }
+  };
+
+  // Hanya jalankan auto-select saat data toko berhasil didapatkan
+  useEffect(() => {
+    const locations = data?.data ?? [];
+    if (locations.length === 1 && !authStore.isPending) {
+      createAuth(locations[0].location_id);
+    }
+  }, [data]);
+
+  const onClickKasir = () => {
+    const location_id = data?.data?.find(
+      (item: any) => item.location.name === value
+    )?.location_id;
+
+    if (!location_id) return;
+    createAuth(location_id);
+  };
 
   const onLogout = useLogoutMutation();
   const onClickLogOut = () => {
-    if (isPending || authStore.isPending) return
-    
+    if (isPending || authStore.isPending) return;
+
     onLogout.mutate(undefined, {
       onSuccess() {
-        signOut()
-        localStorage.clear()
+        signOut();
+        localStorage.clear();
+        sessionStorage.clear();
       },
       onError: () => {
-        signOut()
-        localStorage.clear()
-        sessionStorage.clear()
+        signOut();
+        localStorage.clear();
+        sessionStorage.clear();
       },
-    })
-  }
+    });
+  };
 
   return (
     <div className="relative w-full h-screen p-4">
@@ -127,8 +123,7 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
               >
                 <IoSearch className="ml-2 h-4 w-4 shrink-0" />
                 {value
-                  ? data?.data.find((data: any) => data.location.name === value)
-                    ?.location?.name
+                  ? data?.data?.find((item: any) => item.location.name === value)?.location?.name
                   : "Pilih lokasi toko..."}
               </Button>
             </PopoverTrigger>
@@ -143,21 +138,18 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
                         Sedang mendapatkan data ....
                       </CommandItem>
                     ) : (
-                      data?.data.map((data: any) => (
+                      data?.data?.map((item: any) => (
                         <CommandItem
                           className="text-xs md:text-base"
-                          key={data.location_id}
-                          value={data.location.name}
+                          key={item.location_id}
+                          value={item.location.name}
                           onSelect={(currentValue) => {
                             if (authStore.isPending) return;
-
-                            setValue(
-                              currentValue === value ? "" : currentValue
-                            );
+                            setValue(currentValue === value ? "" : currentValue);
                             setOpen(false);
                           }}
                         >
-                          {data.location.name}
+                          {item.location.name}
                         </CommandItem>
                       ))
                     )}
@@ -166,6 +158,7 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
               </Command>
             </PopoverContent>
           </Popover>
+
           <Button
             onClick={onClickKasir}
             className="w-[250px] md:w-[450px] text-xs md:text-base"
@@ -175,7 +168,12 @@ const ValidationsStorePage: FC<ValidationsStorePageProps> = () => {
           </Button>
         </div>
         <div className="flex justify-center items-center text-gray-500 gap-10 my-10 text-xs md:text-base">
-          <p>Akhiri sesi untuk akun saat ini, <span className="text-primary font-semibold underline cursor-pointer" onClick={onClickLogOut}>Keluar</span></p>
+          <p>
+            Akhiri sesi untuk akun saat ini,{" "}
+            <span className="text-primary font-semibold underline cursor-pointer" onClick={onClickLogOut}>
+              Keluar
+            </span>
+          </p>
         </div>
       </div>
     </div>
