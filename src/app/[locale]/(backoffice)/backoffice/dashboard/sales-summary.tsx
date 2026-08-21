@@ -45,7 +45,7 @@ const SalesSummary: FC<SalesSummaryProps> = (props: SalesSummaryProps) => {
                 <Card>
                     <CardHeader>
                         <CardDescription>
-                            Total Laba Bersih
+                            Total Laba Kotor (Margin)
                         </CardDescription>
                         <CardTitle>
                             { formatRupiah(data?.data.data[0].net_profit || 0) }
