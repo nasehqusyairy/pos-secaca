@@ -48,6 +48,7 @@ const InvoicePage: FC<InvoicePageProps> = () => {
   const [keyword, setKeyword] = useState<string | undefined>(undefined);
   const [filterSales, setFilterSales] = useState<string>('my');
   const [menuMobile, setMenuMobile] = useState<string>('invoice');
+  const [isLastMode, setIsLastMode] = useState<boolean>(false);
 
   // Fallback sinkronisasi localStorage jika saat inisialisasi awal belum terbaca
   useEffect(() => {
@@ -71,18 +72,19 @@ const InvoicePage: FC<InvoicePageProps> = () => {
     only_logged_cashier: filterSales === 'my',
     keyword,
     cursor,
+    last: isLastMode,
   } as GetInvoicesQueryParams;
 
+  // Tidak perlu `refetch` manual lagi — queryKey sudah menyertakan param,
+  // jadi React Query otomatis refetch tiap kali param berubah.
   const {
     data: dataInvoicesWithCursor,
     isPending: isPendingInvoices,
-    refetch: refetchInvoices
   } = useGetInvoicesQueryWithCursor(getInvoicesQueryParams);
 
   const {
     data: dataInvoiceDetails,
     isPending: isPendingInvoice,
-    refetch: refetchInvoiceDetail
   } = useGetInvoiceDetailQuery(idInvoice);
 
   const dataAll = dataInvoicesWithCursor?.data ?? [];
@@ -96,24 +98,24 @@ const InvoicePage: FC<InvoicePageProps> = () => {
     }
   }, [dataAll]);
 
-  // Refetch detail setiap kali idInvoice berubah
-  useEffect(() => {
-    if (idInvoice > 0) {
-      refetchInvoiceDetail();
-    }
-  }, [idInvoice]);
-
-  // Trigger refetch list invoice secara otomatis saat filter, keyword, kursor, atau locId berubah
-  useEffect(() => {
-    refetchInvoices();
-  }, [cursor, keyword, locId, filterSales]);
-
   const handleNextPage = (cursorTarget?: string) => {
+    setIsLastMode(false);
     setCursor(cursorTarget ?? nextCursor);
   };
 
   const handlePrevPage = (cursorTarget?: string) => {
+    setIsLastMode(false);
     setCursor(cursorTarget ?? prevCursor);
+  };
+
+  const handleFirstPage = () => {
+    setIsLastMode(false);
+    setCursor(undefined);
+  };
+
+  const handleLastPage = () => {
+    setIsLastMode(true);
+    setCursor(undefined);
   };
 
   const onClickDetail = (id: number) => {
@@ -178,6 +180,8 @@ const InvoicePage: FC<InvoicePageProps> = () => {
             onSearch={setKeyword}
             onNextPage={handleNextPage}
             onPrevPage={handlePrevPage}
+            onFirstPage={handleFirstPage}
+            onLastPage={handleLastPage}
             onClickDetail={onClickDetail}
             nextCursor={nextCursor}
             prevCursor={prevCursor}

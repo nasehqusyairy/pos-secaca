@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData  } from "@tanstack/react-query";
 import { getInvoice, getInvoiceWithCursor, getInvoiceDetail } from "./api";
 import { GetInvoicesQueryParams } from "@/types/invoice";
 
@@ -22,16 +22,16 @@ export function useGetInvoicesQuery(limit: number = 10, locations: number[], ref
 
 export function useGetInvoicesQueryWithCursor(param: GetInvoicesQueryParams) {
     return useQuery({
-        queryKey: ["invoices-with-cursor"],
+        queryKey: ["invoices-with-cursor", param],
         queryFn: async () => {
             const response = await getInvoiceWithCursor(param);
             if (!response || !response.data) {
-                return null
+                return null;
             }
-
             return response.data;
         },
-        enabled: param.locs.length > 0 && param.locs[0] !== 0
+        enabled: param.locs.length > 0 && param.locs[0] !== 0,
+        placeholderData: keepPreviousData, // ← tahan data halaman lama selama fetch halaman baru
     });
 }
 

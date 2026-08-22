@@ -31,6 +31,7 @@ import { AiFillProduct } from "react-icons/ai";
 import { Badge } from "@/components/ui/badge";
 import OpenOrderPage from "./open-order";
 import { CustomerOrder } from "@/app/api/customer_order/type";
+import { Loader2 } from "lucide-react";
 
 interface KeranjangPageProps {}
 
@@ -629,7 +630,8 @@ const KeranjangPage: FC<KeranjangPageProps> = () => {
 
         {
           isPending && (
-            <div className="flex justify-center items-center h-[200px]">
+            <div className="flex flex-col justify-center items-center gap-2 h-[200px]">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <p className="text-sm">Memuat data...</p>
             </div>
           )

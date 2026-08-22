@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn, formatRupiah } from "@/lib/utils";
 import { InvoiceModel } from "@/types/invoice";
-import { FC, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import PopupFilterInvoicePage from "./popup-filter-invoice";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { CogIcon } from "lucide-react";
+import { CogIcon, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 const INVOICE_COLUMN = ["No", "No Penjualan", "Kasir", "Total Harga", "Total Pengembalian"];
 
@@ -19,6 +19,8 @@ interface TableInvoicePageProps {
   onSearch: (search: string) => void;
   onNextPage: (cursor?: string) => void;
   onPrevPage: (cursor?: string) => void;
+  onFirstPage: () => void;
+  onLastPage: () => void;
   nextCursor?: string;
   prevCursor?: string;
   onClickDetail: (id: number) => void;
@@ -31,36 +33,14 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
   onSearch,
   onNextPage,
   onPrevPage,
+  onFirstPage,
+  onLastPage,
   nextCursor,
   prevCursor,
   onClickDetail,
   idActive,
 }) => {
   const [openFilter, setOpenFilter] = useState<boolean>(false);
-
-  // Sorting: Tanggal terbaru dulu (DESC), Sequence belakang urut naik (ASC)
-  const sortedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
-
-    return [...data].sort((a, b) => {
-      const partsA = (a.sales_no || "").split("/");
-      const partsB = (b.sales_no || "").split("/");
-
-      const dateA = partsA[0] || "";
-      const dateB = partsB[0] || "";
-
-      // 1. Bandingkan tanggal (DESC: Hari ini/terbaru di atas)
-      if (dateA !== dateB) {
-        return dateB.localeCompare(dateA);
-      }
-
-      // 2. Jika tanggalnya sama, urutkan Sequence angka belakang (ASC: 00001 -> 00002)
-      const seqA = parseInt(partsA[2] || "0", 10);
-      const seqB = parseInt(partsB[2] || "0", 10);
-
-      return seqA - seqB;
-    });
-  }, [data]);
 
   const rowClassNameActive = (id: number) => {
     return cn({
@@ -80,7 +60,6 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
     if (!member) {
       return "-";
     }
-
     return `${member.first_name || ""} ${member.last_name || ""}`.trim() || "-";
   };
 
@@ -92,6 +71,14 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
     onPrevPage();
   };
 
+  const first = () => {
+    onFirstPage();
+  };
+
+  const last = () => {
+    onLastPage();
+  };
+
   const handleFilterSalesSearch = (filter: string) => {
     setOpenFilter(false);
     onFilterSalesSearch(filter);
@@ -100,6 +87,9 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onSearch(event.target.value);
   };
+
+  // Sudah di halaman pertama kalau belum pernah pindah cursor (prevCursor undefined)
+  const isFirstPage = prevCursor === undefined;
 
   return (
     <>
@@ -128,8 +118,8 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedData.length > 0 ? (
-                sortedData.map((item: InvoiceModel, i: number) => {
+              {data.length > 0 ? (
+                data.map((item: InvoiceModel, i: number) => {
                   return (
                     <TableRow
                       className={rowClassNameActive(item.id)}
@@ -153,15 +143,22 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
               )}
               <TableRow>
                 <TableCell colSpan={INVOICE_COLUMN.length} className="text-center">
-                  <div className="flex justify-between">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Button type="button" size="icon" onClick={first} disabled={isFirstPage} title="Awal">
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
                     <Button
                       type="button"
                       className="text-xs md:text-base"
                       onClick={prev}
                       disabled={prevCursor === undefined}
                     >
-                      Sebelum
+                      Sebelumnya
                     </Button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       className="text-xs md:text-base"
@@ -170,7 +167,11 @@ const TableInvoicePage: FC<TableInvoicePageProps> = ({
                     >
                       Selanjutnya
                     </Button>
+                    <Button type="button" size="icon" onClick={last} disabled={nextCursor === undefined} title="Akhir">
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
                   </div>
+                </div>
                 </TableCell>
               </TableRow>
             </TableBody>

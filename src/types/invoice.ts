@@ -206,4 +206,5 @@ export type GetInvoicesQueryParams = {
   keyword?: string,
   cursor?: string,
   exclude_ids?: number[],
+  last?: boolean;
 }
